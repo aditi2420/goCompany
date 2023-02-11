@@ -12,7 +12,7 @@ import (
 	"os"
 
 	//"strings"
-	"fmt"
+
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -32,15 +32,10 @@ func TestMain(m *testing.M) {
 }
 
 func setUp() {
-	//mux = http.NewServeMux()
-	//mux.HandleFunc("/companny/", rest.GetCompany)
-	//writer = httptest.NewRecorder()
 	models.SetupDatabase()
 	kafkaconfig.SetupKafkaProducer()
-	
+
 }
-
-
 
 func TestHandleGet(t *testing.T) {
 
@@ -54,8 +49,7 @@ func TestHandleGet(t *testing.T) {
 	}
 
 	var m models.Company
-	err := json.NewDecoder(w.Result().Body).Decode(&m)
-	fmt.Println("====", err, m)
+	json.NewDecoder(w.Result().Body).Decode(&m)
 	if m.Name == "" {
 		t.Errorf("Failed to get company details")
 	}
@@ -84,6 +78,7 @@ func TestHandleGetIncorrectUrl(t *testing.T) {
 }
 
 var Token string
+
 func TestHandleGetAuthToken(t *testing.T) {
 
 	request, _ := http.NewRequest("GET", "/getJWT", nil)
@@ -95,20 +90,19 @@ func TestHandleGetAuthToken(t *testing.T) {
 		t.Fatalf("Response code is %v", w.Code)
 	}
 
-	
 	//err := json.NewDecoder(w.Result().Body).Decode(&m)
-	
+
 	Token = string(w.Body.Bytes())
-	if len(Token) == 0{
+	if len(Token) == 0 {
 		t.Fatal("empty token")
 	}
-
 
 }
 
 func TestHandleCreate(t *testing.T) {
+	TestHandleGetAuthToken(t)
 	payload := []byte(`{
-		"name"  : "ad0dwe2",
+		"name"  : "ap4",
 		"amount" : 113,
 		"registered": true  ,
 		"type" : "NonProfit",
@@ -116,15 +110,14 @@ func TestHandleCreate(t *testing.T) {
 
 	request, _ := http.NewRequest("POST", "/company/", bytes.NewBuffer(payload))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	request.Header.Set("token", Token)
 	w := httptest.NewRecorder()
 	rest.CreateCompany(w, request)
 	if w.Code != 200 {
 		t.Fatal("Create failed")
 	}
-	fmt.Println("aaaaaa", w)
 	var m models.Company
-	err := json.NewDecoder(w.Result().Body).Decode(&m)
-	fmt.Println("====", err, m)
+	json.NewDecoder(w.Result().Body).Decode(&m)
 	if m.Name == "" {
 		t.Errorf("Failed to get company details")
 	}
