@@ -42,10 +42,11 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func CreateCompany(w http.ResponseWriter, req *http.Request) {
 
 	if err := validateJWT(w, req); err != nil {
-		//returnResponse(w, http.StatusUnauthorized, httpError{Code: 10, Message: "Auth error"})
+		returnResponse(w, http.StatusUnauthorized, httpError{Code: 10, Message: "Auth error"})
 		return
 	}
-	dec := json.NewDecoder(req.Body)
+
+	dec := json.NewDecoder(req.Body)	
 	dec.DisallowUnknownFields()
 
 	var inputCompany *Company
@@ -83,7 +84,6 @@ func GetCompany(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	queryParams := mux.Vars(req)
-	fmt.Println("=====2222", queryParams)
 	if _, ok := queryParams["name"]; ok == false {
 		returnResponse(w, http.StatusBadRequest, httpError{Code: 10, Message: "payload validation error"})
 		return
@@ -104,6 +104,11 @@ func GetCompany(w http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteCompany(w http.ResponseWriter, req *http.Request) {
+
+	if err := validateJWT(w, req); err != nil {
+		returnResponse(w, http.StatusUnauthorized, httpError{Code: 10, Message: "Auth error"})
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := validateJWT(w, req); err != nil {
@@ -129,7 +134,10 @@ func DeleteCompany(w http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateCompany(w http.ResponseWriter, req *http.Request) {
-
+	if err := validateJWT(w, req); err != nil {
+		returnResponse(w, http.StatusUnauthorized, httpError{Code: 10, Message: "Auth error"})
+		return
+	}
 	if err := validateJWT(w, req); err != nil {
 		returnResponse(w, http.StatusUnauthorized, httpError{Code: 10, Message: "Auth error"})
 		return
